@@ -17,6 +17,7 @@
       --color-warning:#964219;
       --color-error:#a12c7b;
     }
+
     [data-theme="dark"] {
       --color-bg:#171614;
       --color-surface:#1c1b19;
@@ -28,6 +29,7 @@
       --color-warning:#bb653b;
       --color-error:#d163a7;
     }
+
     :root {
       --text-sm:.9rem;
       --text-base:1rem;
@@ -40,21 +42,30 @@
       --radius-xl:1.25rem;
       --font-body:'Satoshi', sans-serif;
     }
-    *{box-sizing:border-box;}
-    html,body{
+
+    * {
+      box-sizing:border-box;
+    }
+
+    html, body {
       margin:0;
       padding:0;
       font-family:var(--font-body);
       background:var(--color-bg);
       color:var(--color-text);
     }
-    body{min-height:100vh;}
-    .app{
+
+    body {
+      min-height:100vh;
+    }
+
+    .app {
       display:grid;
       grid-template-columns:260px 1fr;
       min-height:100vh;
     }
-    .sidebar{
+
+    .sidebar {
       background:var(--color-surface);
       border-right:1px solid var(--color-border);
       padding:var(--space-6);
@@ -62,14 +73,16 @@
       flex-direction:column;
       gap:var(--space-6);
     }
-    .brand{
+
+    .brand {
       display:flex;
       align-items:center;
       gap:.8rem;
       font-weight:700;
       font-size:1.3rem;
     }
-    .logo{
+
+    .logo {
       width:38px;
       height:38px;
       border-radius:12px;
@@ -79,12 +92,14 @@
       color:white;
       font-weight:700;
     }
-    .nav{
+
+    .nav {
       display:flex;
       flex-direction:column;
       gap:.5rem;
     }
-    .nav a{
+
+    .nav a {
       display:flex;
       align-items:center;
       padding:.9rem 1rem;
@@ -93,79 +108,201 @@
       color:var(--color-text-muted);
       font-size:var(--text-sm);
     }
+
     .nav a.active,
-    .nav a:hover{
+    .nav a:hover {
       background:rgba(79,152,163,.12);
       color:var(--color-text);
     }
-    .main{
+
+    .main {
       padding:var(--space-6);
       display:flex;
       flex-direction:column;
       gap:var(--space-6);
     }
-    .topbar{
+
+    .topbar {
       display:flex;
       justify-content:space-between;
       align-items:center;
+      gap:var(--space-4);
     }
-    .topbar h1{
+
+    .topbar h1 {
       font-size:var(--text-xl);
       margin:0;
     }
-    .subtitle{
+
+    .subtitle {
       margin-top:.3rem;
       color:var(--color-text-muted);
       font-size:var(--text-sm);
     }
-    .actions{
+
+    .actions {
       display:flex;
       gap:.75rem;
     }
-    .btn{
+
+    .btn {
       border:none;
       border-radius:var(--radius-md);
       padding:.8rem 1rem;
       font-weight:600;
       cursor:pointer;
     }
-    .btn.secondary{
+
+    .btn.secondary {
       background:var(--color-surface);
       color:var(--color-text);
       border:1px solid var(--color-border);
     }
-    .btn.primary{
+
+    .btn.primary {
       background:var(--color-primary);
       color:white;
     }
-    .grid-kpi{
+
+    .grid-kpi {
       display:grid;
       grid-template-columns:repeat(4,1fr);
       gap:var(--space-4);
     }
-    .card{
+
+    .card {
       background:var(--color-surface);
       border:1px solid var(--color-border);
       border-radius:var(--radius-xl);
     }
-    .kpi{
+
+    .kpi {
       padding:var(--space-5);
     }
-    .kpi .label{
+
+    .kpi .label {
       font-size:var(--text-sm);
       color:var(--color-text-muted);
     }
-    .kpi .value{
+
+    .kpi .value {
       font-size:2rem;
       font-weight:700;
       margin:.5rem 0;
     }
-    .kpi .trend{
+
+    .kpi .trend {
       font-size:var(--text-sm);
     }
-    .up{color:var(--color-success);}
-    .warn{color:var(--color-warning);}
-    .down{color:var(--color-error);}
+
+    .up {
+      color:var(--color-success);
+    }
+
+    .warn {
+      color:var(--color-warning);
+    }
+
+    .down {
+      color:var(--color-error);
+    }
+
+    .content {
+      display:grid;
+      grid-template-columns:1fr;
+      gap:var(--space-4);
+    }
+
+    .panel {
+      padding:var(--space-5);
+    }
+
+    .panel-head {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:1rem;
+    }
+
+    .panel-head h2 {
+      margin:0;
+      font-size:1.05rem;
+    }
+
+    .note {
+      font-size:.8rem;
+      color:var(--color-text-muted);
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      font-size:var(--text-sm);
+    }
+
+    th, td {
+      padding:.9rem .75rem;
+      text-align:left;
+      border-bottom:1px solid var(--color-border);
+    }
+
+    th {
+      color:var(--color-text-muted);
+      font-weight:500;
+    }
+
+    .badge {
+      display:inline-flex;
+      align-items:center;
+      padding:.28rem .6rem;
+      border-radius:999px;
+      font-size:.78rem;
+      font-weight:700;
+    }
+
+    .b-critical {
+      background:rgba(209,99,167,.18);
+      color:var(--color-error);
+    }
+
+    .b-high {
+      background:rgba(187,101,59,.18);
+      color:var(--color-warning);
+    }
+
+    .b-medium {
+      background:rgba(79,152,163,.18);
+      color:var(--color-primary);
+    }
+
+    .b-open {
+      background:rgba(79,152,163,.18);
+      color:var(--color-primary);
+    }
+
+    .b-invest {
+      background:rgba(109,170,69,.18);
+      color:var(--color-success);
+    }
+
+    .b-remed {
+      background:rgba(187,101,59,.18);
+      color:var(--color-warning);
+    }
+
+    @media (max-width: 1100px) {
+      .grid-kpi {
+        grid-template-columns:repeat(2,1fr);
+      }
+
+      .app {
+        grid-template-columns:1fr;
+      }
+
+      .sidebar {
+        display:none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -175,6 +312,7 @@
         <div class="logo">S</div>
         <span>Socket</span>
       </div>
+
       <nav class="nav">
         <a href="#" class="active">Tableau de bord</a>
         <a href="#">Incidents</a>
@@ -184,6 +322,7 @@
         <a href="#">Paramètres</a>
       </nav>
     </aside>
+
     <main class="main">
       <div class="topbar">
         <div>
@@ -192,6 +331,7 @@
             Suivi des incidents, priorisation et coordination des actions analystes
           </div>
         </div>
+
         <div class="actions">
           <button class="btn secondary">Exporter</button>
           <button class="btn primary">Nouveau ticket</button>
@@ -204,20 +344,74 @@
           <div class="value">27</div>
           <div class="trend up">+12% sur 7 jours</div>
         </div>
+
         <div class="card kpi">
           <div class="label">Critiques</div>
           <div class="value">4</div>
           <div class="trend down">+2 depuis ce matin</div>
         </div>
+
         <div class="card kpi">
           <div class="label">MTTR moyen</div>
           <div class="value">3h42</div>
           <div class="trend warn">Objectif : &lt; 4h</div>
         </div>
+
         <div class="card kpi">
           <div class="label">Analystes actifs</div>
           <div class="value">6</div>
           <div class="trend up">2 équipes mobilisées</div>
+        </div>
+      </section>
+
+      <section class="content">
+        <div class="card panel">
+          <div class="panel-head">
+            <h2>Incidents récents</h2>
+            <span class="note">Dernières 24 heures</span>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Titre</th>
+                <th>Priorité</th>
+                <th>Statut</th>
+                <th>Assigné</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>INC-241</td>
+                <td>Suspicion de phishing ciblé sur service RH</td>
+                <td><span class="badge b-critical">Critique</span></td>
+                <td><span class="badge b-invest">Investigation</span></td>
+                <td>A. Martin</td>
+              </tr>
+              <tr>
+                <td>INC-238</td>
+                <td>Détection EDR d'exécution PowerShell anormale</td>
+                <td><span class="badge b-high">Élevée</span></td>
+                <td><span class="badge b-remed">Remédiation</span></td>
+                <td>L. Perez</td>
+              </tr>
+              <tr>
+                <td>INC-235</td>
+                <td>Connexion suspecte sur compte VPN prestataire</td>
+                <td><span class="badge b-high">Élevée</span></td>
+                <td><span class="badge b-open">Ouvert</span></td>
+                <td>S. Moreau</td>
+              </tr>
+              <tr>
+                <td>INC-229</td>
+                <td>Scan réseau inhabituel sur segment usine</td>
+                <td><span class="badge b-medium">Moyenne</span></td>
+                <td><span class="badge b-invest">Investigation</span></td>
+                <td>N. Roche</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
     </main>
