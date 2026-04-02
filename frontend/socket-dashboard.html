@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Socket - Tableau de bord</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+  <style>
+    :root, [data-theme="light"] {
+      --color-bg:#f7f6f2;
+      --color-surface:#f9f8f5;
+      --color-border:#d4d1ca;
+      --color-text:#28251d;
+      --color-text-muted:#7a7974;
+      --color-primary:#01696f;
+      --color-success:#437a22;
+      --color-warning:#964219;
+      --color-error:#a12c7b;
+    }
+    [data-theme="dark"] {
+      --color-bg:#171614;
+      --color-surface:#1c1b19;
+      --color-border:#393836;
+      --color-text:#cdccca;
+      --color-text-muted:#9a9996;
+      --color-primary:#4f98a3;
+      --color-success:#6daa45;
+      --color-warning:#bb653b;
+      --color-error:#d163a7;
+    }
+    :root {
+      --text-sm:.9rem;
+      --text-base:1rem;
+      --text-xl:1.6rem;
+      --space-4:1rem;
+      --space-5:1.25rem;
+      --space-6:1.5rem;
+      --space-8:2rem;
+      --radius-md:.8rem;
+      --radius-xl:1.25rem;
+      --font-body:'Satoshi', sans-serif;
+    }
+    *{box-sizing:border-box;}
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:var(--font-body);
+      background:var(--color-bg);
+      color:var(--color-text);
+    }
+    body{min-height:100vh;}
+    .app{
+      display:grid;
+      grid-template-columns:260px 1fr;
+      min-height:100vh;
+    }
+    .sidebar{
+      background:var(--color-surface);
+      border-right:1px solid var(--color-border);
+      padding:var(--space-6);
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-6);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:.8rem;
+      font-weight:700;
+      font-size:1.3rem;
+    }
+    .logo{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      background:linear-gradient(135deg,var(--color-primary),#285b70);
+      display:grid;
+      place-items:center;
+      color:white;
+      font-weight:700;
+    }
+    .nav{
+      display:flex;
+      flex-direction:column;
+      gap:.5rem;
+    }
+    .nav a{
+      display:flex;
+      align-items:center;
+      padding:.9rem 1rem;
+      border-radius:var(--radius-md);
+      text-decoration:none;
+      color:var(--color-text-muted);
+      font-size:var(--text-sm);
+    }
+    .nav a.active,
+    .nav a:hover{
+      background:rgba(79,152,163,.12);
+      color:var(--color-text);
+    }
+    .main{
+      padding:var(--space-6);
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-6);
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .topbar h1{
+      font-size:var(--text-xl);
+      margin:0;
+    }
+    .subtitle{
+      margin-top:.3rem;
+      color:var(--color-text-muted);
+      font-size:var(--text-sm);
+    }
+    .actions{
+      display:flex;
+      gap:.75rem;
+    }
+    .btn{
+      border:none;
+      border-radius:var(--radius-md);
+      padding:.8rem 1rem;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .btn.secondary{
+      background:var(--color-surface);
+      color:var(--color-text);
+      border:1px solid var(--color-border);
+    }
+    .btn.primary{
+      background:var(--color-primary);
+      color:white;
+    }
+    .grid-kpi{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:var(--space-4);
+    }
+    .card{
+      background:var(--color-surface);
+      border:1px solid var(--color-border);
+      border-radius:var(--radius-xl);
+    }
+    .kpi{
+      padding:var(--space-5);
+    }
+    .kpi .label{
+      font-size:var(--text-sm);
+      color:var(--color-text-muted);
+    }
+    .kpi .value{
+      font-size:2rem;
+      font-weight:700;
+      margin:.5rem 0;
+    }
+    .kpi .trend{
+      font-size:var(--text-sm);
+    }
+    .up{color:var(--color-success);}
+    .warn{color:var(--color-warning);}
+    .down{color:var(--color-error);}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">S</div>
+        <span>Socket</span>
+      </div>
+      <nav class="nav">
+        <a href="#" class="active">Tableau de bord</a>
+        <a href="#">Incidents</a>
+        <a href="#">Playbooks</a>
+        <a href="#">Analystes</a>
+        <a href="#">Journaux</a>
+        <a href="#">Paramètres</a>
+      </nav>
+    </aside>
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h1>Vue opérationnelle SOC</h1>
+          <div class="subtitle">
+            Suivi des incidents, priorisation et coordination des actions analystes
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn secondary">Exporter</button>
+          <button class="btn primary">Nouveau ticket</button>
+        </div>
+      </div>
+
+      <section class="grid-kpi">
+        <div class="card kpi">
+          <div class="label">Incidents ouverts</div>
+          <div class="value">27</div>
+          <div class="trend up">+12% sur 7 jours</div>
+        </div>
+        <div class="card kpi">
+          <div class="label">Critiques</div>
+          <div class="value">4</div>
+          <div class="trend down">+2 depuis ce matin</div>
+        </div>
+        <div class="card kpi">
+          <div class="label">MTTR moyen</div>
+          <div class="value">3h42</div>
+          <div class="trend warn">Objectif : &lt; 4h</div>
+        </div>
+        <div class="card kpi">
+          <div class="label">Analystes actifs</div>
+          <div class="value">6</div>
+          <div class="trend up">2 équipes mobilisées</div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
