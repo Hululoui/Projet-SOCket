@@ -14,11 +14,16 @@ def log_event(event_type, username, details=""):
         "timestamp": datetime.utcnow().isoformat(),
         "event_type": event_type,
         "username": username,
-        "details": details
+        "details": details,
+        "source_ip": request.remote_addr
     }
     with open("logs.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
+@app.before_request
+def log_toutes_requetes():
+    username = session.get("username", "anonyme")
+    log_event("HTTP_REQUEST", username, f"{request.method} {request.path}")
 
 def get_db():
     if "db" not in g:
@@ -40,13 +45,22 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL
+            password_hash TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'analyst'
         );
         CREATE TABLE IF NOT EXISTS incidents (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             titre TEXT NOT NULL,
             criticite TEXT NOT NULL,
             statut TEXT NOT NULL DEFAULT 'detecte'
+        );
+        CREATE TABLE IF NOT EXISTS commentaires (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            incident_id INTEGER NOT NULL,
+            auteur TEXT NOT NULL,
+            contenu TEXT NOT NULL,
+            date_creation TEXT NOT NULL,
+            FOREIGN KEY (incident_id) REFERENCES incidents(id)
         );
     """)
     db.commit()
@@ -58,6 +72,16 @@ def login_requis(f):
     def wrapper(*args, **kwargs):
         if "username" not in session:
             return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def admin_requis(f):
+    from functools import wraps
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if session.get("role") != "admin":
+            return "Accès refusé : réservé aux administrateurs.", 403
         return f(*args, **kwargs)
     return wrapper
 
@@ -92,6 +116,7 @@ def login():
         ).fetchone()
         if user and check_password_hash(user["password_hash"], request.form["password"]):
             session["username"] = user["username"]
+            session["role"] = user["role"]
             log_event("LOGIN_SUCCESS", user["username"])
             return redirect(url_for("accueil"))
         log_event("LOGIN_FAILED", request.form["username"])
@@ -178,6 +203,40 @@ def changer_statut(incident_id):
     log_event("INCIDENT_STATUS_CHANGE", session["username"], f"incident #{incident_id} -> {nouveau_statut}")
     return redirect(url_for("accueil"))
 
+@app.route("/incident/<int:incident_id>")
+@login_requis
+def voir_incident(incident_id):
+    db = get_db()
+    incident = db.execute("SELECT * FROM incidents WHERE id = ?", (incident_id,)).fetchone()
+    commentaires = db.execute(
+        "SELECT * FROM commentaires WHERE incident_id = ? ORDER BY date_creation", (incident_id,)
+    ).fetchall()
+    html = f"<h1>Incident #{incident['id']} - {incident['titre']}</h1>"
+    html += f"<p>Criticité : {incident['criticite']} | Statut : {incident['statut']}</p>"
+    html += "<h2>Commentaires</h2><ul>"
+    for c in commentaires:
+        html += f"<li><b>{c['auteur']}</b> ({c['date_creation'][:16]}) : {c['contenu']}</li>"
+    html += "</ul>"
+    html += f"""
+        <form method="POST" action="/incident/{incident_id}/commentaire">
+            <textarea name="contenu" placeholder="Ajouter un commentaire..."></textarea><br>
+            <button type="submit">Commenter</button>
+        </form>
+        <a href="/">Retour à l'accueil</a>
+    """
+    return html
+
+@app.route("/incident/<int:incident_id>/commentaire", methods=["POST"])
+@login_requis
+def ajouter_commentaire(incident_id):
+    db = get_db()
+    db.execute(
+        "INSERT INTO commentaires (incident_id, auteur, contenu, date_creation) VALUES (?, ?, ?, ?)",
+        (incident_id, session["username"], request.form["contenu"], datetime.utcnow().isoformat())
+    )
+    db.commit()
+    log_event("COMMENT_ADDED", session["username"], f"incident #{incident_id}")
+    return redirect(url_for("voir_incident", incident_id=incident_id))
 
 @app.route("/logs")
 @login_requis
@@ -190,14 +249,26 @@ def voir_logs():
         pass
     lignes.reverse()
     html = "<h1>Logs de sécurité</h1><table border='1' cellpadding='5'>"
-    html += "<tr><th>Horodatage</th><th>Événement</th><th>Utilisateur</th><th>Détails</th></tr>"
+    html += "<tr><th>Horodatage</th><th>Événement</th><th>Utilisateur</th><th>IP source</th><th>Détails</th></tr>"
     for l in lignes:
-        html += f"<tr><td>{l['timestamp']}</td><td>{l['event_type']}</td><td>{l['username']}</td><td>{l['details']}</td></tr>"
+        ip = l.get("source_ip", "inconnue")
+        html += f"<tr><td>{l['timestamp']}</td><td>{l['event_type']}</td><td>{l['username']}</td><td>{ip}</td><td>{l['details']}</td></tr>"
     html += "</table><br><a href='/'>Retour</a>"
     return html
 
+@app.route("/admin/utilisateurs")
+@login_requis
+@admin_requis
+def liste_utilisateurs():
+    db = get_db()
+    users = db.execute("SELECT id, username, role FROM users").fetchall()
+    html = "<h1>Gestion des utilisateurs</h1><ul>"
+    for u in users:
+        html += f"<li>#{u['id']} - {u['username']} ({u['role']})</li>"
+    html += "</ul><a href='/'>Retour</a>"
+    return html
 
 if __name__ == "__main__":
     with app.app_context():
         init_db()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", debug=True)

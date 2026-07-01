@@ -1,0 +1,14 @@
+services:
+  socket-app:
+    build: ./app
+    container_name: socket-app
+    ports:
+      - "5000:5000"
+    environment:
+      - SECRET_KEY=${SOCKET_SECRET_KEY:-changez-moi-en-production}
+    volumes:
+      - socket-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  socket-data:
