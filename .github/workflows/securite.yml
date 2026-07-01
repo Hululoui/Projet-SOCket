@@ -1,0 +1,24 @@
+name: Analyse de sécurité
+
+on: [push]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Installer les outils de scan
+        run: pip install bandit safety
+
+      - name: Scanner le code avec bandit
+        run: bandit -r app/ -f txt
+
+      - name: Vérifier les dépendances avec safety
+        run: safety check -r app/requirements.txt
