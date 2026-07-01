@@ -1,52 +1,67 @@
-# Socket
+# SOCket
 
-Plateforme de gestion d'incidents de sécurité (SOC) développée dans le cadre du projet fil rouge de bachelor.
+Plateforme de gestion d'incidents de sécurité (SOC) développée dans le cadre du projet fil rouge de Bachelor 3 Cybersécurité — Ynov.
 
 ## Objectif
 
-Socket a pour but de centraliser le suivi des incidents de sécurité depuis leur détection jusqu’à leur clôture.  
-La plateforme doit permettre aux analystes SOC de collaborer, tracer leurs actions, gérer les incidents et préparer l’intégration de mécanismes de journalisation, d’automatisation et d’investigation.
+SOCket a pour but de centraliser le suivi des incidents de sécurité depuis leur détection jusqu'à leur clôture, en remplaçant les pratiques dispersées (emails, tableurs, tickets génériques) par une plateforme unique, avec traçabilité complète des actions.
 
-## Structure actuelle du projet
+## État actuel du projet
 
-- `frontend/` : maquette de l’interface utilisateur, dont le tableau de bord Socket.
-- `docs/` : documentation technique intermédiaire et futurs livrables documentaires.
-- `README.md` : présentation générale du projet.
+Le projet a démarré avec un cadrage technique visant une stack React / Node.js / PostgreSQL / MongoDB (voir `docs/doc_technique_intermediaire.md` pour l'historique de cette réflexion).
 
-## État actuel
+Face à une contrainte de temps forte et à la réalisation en solo, le choix a été fait de prioriser un **prototype fonctionnel de bout en bout** plutôt qu'une architecture multi-services non finalisée. La stack a donc été simplifiée :
 
-Le projet est actuellement au stade de cadrage et de prototypage :
+- **Framework web** : Python / Flask (au lieu de Node.js / Express)
+- **Base de données** : SQLite (au lieu de PostgreSQL) — suffisante pour un prototype, sans serveur de base séparé à administrer
+- **Logs d'audit** : fichier JSON Lines (`logs.jsonl`), qui illustre une approche NoSQL simple pour les événements de traçabilité (au lieu de MongoDB)
 
-- documentation technique intermédiaire en cours ;
-- maquette statique du dashboard dans `frontend/socket-dashboard.html` ;
-- préparation de la structure Git/GitHub du projet.
+Ce choix permet de disposer d'une application **réellement fonctionnelle et testée**, plutôt que d'un squelette multi-technologies inachevé.
 
-## Roadmap
+## Fonctionnalités implémentées
 
-- Phase 0 : Setup et cadrage
-- Phase 1 : MVP fonctionnel
-- Phase 2 : Collaboration, preuves et logs
-- Phase 3 : Déploiement et hardening
-- Phase 4 : DevSecOps et automatisation
-- Phase 5 : Audit / Pentest et corrections
-- Phase 6 : Incident simulé et forensic
-- Phase 7 : Finalisation et soutenance
+- **Authentification sécurisée** : comptes analystes, mots de passe hashés (PBKDF2 via `werkzeug.security`), sessions protégées
+- **Gestion du cycle de vie des incidents** : création → détecté → qualifié → en traitement → clôturé
+- **Contrôle d'accès** : toutes les routes sensibles nécessitent une authentification
+- **Journalisation de sécurité** : traçabilité de chaque action sensible (connexion, création/modification d'incident) avec horodatage, consultable via l'interface (`/logs`)
+- **Protection contre l'injection SQL** : toutes les requêtes utilisent des paramètres liés (`?`), jamais de concaténation de chaînes
 
-## Stack cible
+## Structure du dépôt
+SOCket/
+├── README.md
+├── .gitignore
+├── app/
+│   ├── app.py              # Application Flask (routes, logique métier, base de données)
+│   └── requirements.txt    # Dépendances Python
+└── docs/
+└── doc_technique_intermediaire.md   # Cadrage technique initial (stack cible React/Node)
 
-- Frontend : React
-- Backend : Node.js / Express
-- Base de données relationnelle : PostgreSQL
-- Base NoSQL : MongoDB
-- Déploiement : Docker / Docker Compose
-- CI/CD : GitHub Actions
+## Lancer le projet
 
-## Lancement actuel
+```bash
+cd app
+python -m venv venv
+venv\Scripts\activate        # Windows
+pip install -r requirements.txt
+python app.py
+```
 
-À ce stade, la maquette peut être ouverte directement dans un navigateur via :
+L'application est accessible sur [http://127.0.0.1:5000](http://127.0.0.1:5000).
 
-`frontend/socket-dashboard.html`
+## Sécurité — principes appliqués
+
+- Mots de passe hashés, jamais stockés en clair
+- Requêtes SQL paramétrées (protection contre l'injection SQL)
+- Authentification obligatoire sur toutes les routes sensibles
+- Traçabilité complète des actions (horodatage, utilisateur, type d'événement)
+
+## Évolutions possibles
+
+- Migration vers PostgreSQL / MongoDB si le projet devait être industrialisé (cadrage initial conservé dans `docs/`)
+- Conteneurisation Docker
+- Séparation des rôles (analyste / administrateur)
+- Chiffrement TLS/HTTPS
 
 ## Auteur
 
-Projet réalisé dans le cadre du projet fil rouge B3 cybersécurité.
+COMTE Supreet — Projet Fil Rouge, Bachelor 3 Cybersécurité, Ynov.
