@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %} — nouvel incident{% endblock %}
+{% block content %}
+<div class="eyebrow">déclaration</div>
+<h1 style="margin-bottom:1.6rem;">Nouvel incident</h1>
+
+<div class="panel" style="max-width:520px;">
+    <form method="POST">
+        <label>Titre</label>
+        <input type="text" name="titre" required placeholder="Ex : Tentative de connexion suspecte sur serveur X">
+
+        <label>Description</label>
+        <textarea name="description" placeholder="Décrire ce qui a été détecté..."></textarea>
+
+        <label>Criticité</label>
+        <select name="criticite">
+            <option value="basse">Basse</option>
+            <option value="moyenne" selected>Moyenne</option>
+            <option value="haute">Haute</option>
+            <option value="critique">Critique</option>
+        </select>
+
+        <div class="form-actions">
+            <button type="submit">Créer l'incident</button>
+            <a href="{{ url_for('accueil') }}" class="btn-ghost">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %} — créer un compte{% endblock %}
+{% block content %}
+<div style="max-width: 400px; margin: 3rem auto 0;">
+    <div class="eyebrow" style="text-align:center;">nouvel analyste</div>
+    <h1 style="text-align:center; margin-bottom:1.6rem;">Créer un compte</h1>
+    <div class="panel">
+        <form method="POST">
+            <label>Nom d'utilisateur</label>
+            <input type="text" name="username" required autofocus>
+            <label>Mot de passe</label>
+            <input type="password" name="password" required minlength="8">
+            <div class="form-actions">
+                <button type="submit" style="width:100%;">Créer le compte</button>
+            </div>
+        </form>
+    </div>
+    <p style="text-align:center; margin-top:1rem; color:var(--text-dim); font-size:0.85rem;">
+        Déjà inscrit ? <a href="{{ url_for('login') }}">Se connecter</a>
+    </p>
+</div>
+{% endblock %}

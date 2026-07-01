@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %} — incidents{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <div class="eyebrow">tableau de bord</div>
+        <h1>Incidents en cours</h1>
+    </div>
+    <div class="actions">
+        <a href="{{ url_for('nouveau_incident') }}" class="btn">+ Nouvel incident</a>
+    </div>
+</div>
+
+<div class="stat-row">
+    <div class="stat"><div class="num">{{ stats.total }}</div><div class="label">Total</div></div>
+    <div class="stat" style="--accent-color: var(--haute);"><div class="num">{{ stats.ouverts }}</div><div class="label">En cours</div></div>
+    <div class="stat" style="--accent-color: var(--crit);"><div class="num">{{ stats.critiques }}</div><div class="label">Critiques</div></div>
+    <div class="stat" style="--accent-color: var(--accent);"><div class="num">{{ stats.clotures }}</div><div class="label">Clôturés</div></div>
+</div>
+
+{% if incidents %}
+<div class="card-list">
+    {% for i in incidents %}
+    <div class="inc-card sev-{{ i.criticite }}">
+        <div class="inc-top">
+            <div style="display:flex; align-items:center; gap:0.7rem;">
+                <span class="inc-id">#{{ "%03d"|format(i.id) }}</span>
+                <a href="{{ url_for('voir_incident', incident_id=i.id) }}" class="inc-title">{{ i.titre }}</a>
+            </div>
+            <div class="inc-meta">
+                <span class="badge {{ i.criticite }}">{{ i.criticite }}</span>
+                <span class="status-pill {{ 'cloture' if i.statut == 'cloture' else '' }}">{{ i.statut.replace('_',' ') }}</span>
+            </div>
+        </div>
+        <form method="POST" action="{{ url_for('changer_statut', incident_id=i.id) }}" class="inc-form">
+            <select name="statut">
+                <option value="detecte" {% if i.statut=='detecte' %}selected{% endif %}>Détecté</option>
+                <option value="qualifie" {% if i.statut=='qualifie' %}selected{% endif %}>Qualifié</option>
+                <option value="en_traitement" {% if i.statut=='en_traitement' %}selected{% endif %}>En traitement</option>
+                <option value="cloture" {% if i.statut=='cloture' %}selected{% endif %}>Clôturé</option>
+            </select>
+            <button type="submit" class="btn-ghost btn-small">Mettre à jour</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="glyph">[ ]</div>
+    <p>Aucun incident enregistré pour le moment.</p>
+    <p style="margin-top:0.8rem;"><a href="{{ url_for('nouveau_incident') }}">Créer le premier incident →</a></p>
+</div>
+{% endif %}
+{% endblock %}

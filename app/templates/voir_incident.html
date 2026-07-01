@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %} — incident #{{ incident.id }}{% endblock %}
+{% block content %}
+<div class="detail-head">
+    <div>
+        <div class="eyebrow">incident #{{ "%03d"|format(incident.id) }}</div>
+        <h1>{{ incident.titre }}</h1>
+    </div>
+    <div class="inc-meta">
+        <span class="badge {{ incident.criticite }}">{{ incident.criticite }}</span>
+        <span class="status-pill {{ 'cloture' if incident.statut == 'cloture' else '' }}">{{ incident.statut.replace('_',' ') }}</span>
+    </div>
+</div>
+
+<div style="margin: 1.4rem 0 2rem;">
+    <a href="{{ url_for('accueil') }}" class="btn-ghost btn-small">← Retour aux incidents</a>
+</div>
+
+<h2 style="font-family:var(--mono); font-size:0.78rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.8rem;">
+    Fil de commentaires ({{ commentaires|length }})
+</h2>
+
+{% if commentaires %}
+    {% for c in commentaires %}
+    <div class="comment">
+        <div class="comment-head">
+            <span class="comment-author">{{ c.auteur }}</span>
+            <span class="comment-date">{{ c.date_creation[:16] }}</span>
+        </div>
+        <div>{{ c.contenu }}</div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="color:var(--text-dim); font-size:0.85rem; margin-bottom:1rem;">Aucun commentaire pour le moment.</p>
+{% endif %}
+
+<div class="panel" style="max-width:600px; margin-top:1.4rem;">
+    <form method="POST" action="{{ url_for('ajouter_commentaire', incident_id=incident.id) }}">
+        <label>Ajouter un commentaire</label>
+        <textarea name="contenu" placeholder="Analyse, action menée, observation..." required></textarea>
+        <div class="form-actions">
+            <button type="submit">Publier</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

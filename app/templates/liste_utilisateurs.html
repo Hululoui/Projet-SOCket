@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %} — équipe{% endblock %}
+{% block content %}
+<div class="eyebrow">administration</div>
+<h1 style="margin-bottom:1.6rem;">Équipe d'analystes</h1>
+
+<table class="log-table">
+    <tr>
+        <th>ID</th>
+        <th>Nom d'utilisateur</th>
+        <th>Rôle</th>
+    </tr>
+    {% for u in users %}
+    <tr>
+        <td>#{{ u.id }}</td>
+        <td>{{ u.username }}</td>
+        <td><span class="evt-tag {% if u.role == 'admin' %}ok{% endif %}">{{ u.role }}</span></td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

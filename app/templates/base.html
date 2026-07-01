@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOCket{% block title %}{% endblock %}</title>
+    <style>
+        :root {
+            --bg-0: #0a0d14;
+            --bg-1: #10141d;
+            --bg-2: #161b26;
+            --line: #232a38;
+            --line-bright: #34405a;
+            --text: #c7ceda;
+            --text-dim: #6b7688;
+            --accent: #3ddc84;
+            --accent-dim: #1e6b45;
+            --crit: #ff5c5c;
+            --haute: #ffa84c;
+            --moyenne: #4c9eff;
+            --basse: #6b7688;
+            --mono: 'JetBrains Mono', 'Consolas', 'SF Mono', monospace;
+            --sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scrollbar-color: var(--line-bright) var(--bg-0); }
+        body {
+            font-family: var(--sans);
+            background:
+                radial-gradient(ellipse 900px 500px at 15% -10%, rgba(61,220,132,0.06), transparent),
+                var(--bg-0);
+            color: var(--text);
+            min-height: 100vh;
+            font-size: 14.5px;
+            line-height: 1.5;
+        }
+
+        /* Grille de fond subtile, façon écran radar */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--line) 1px, transparent 1px);
+            background-size: 48px 48px;
+            opacity: 0.12;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .shell { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* --- Bandeau supérieur --- */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.9rem 1.8rem;
+            border-bottom: 1px solid var(--line);
+            background: rgba(16,20,29,0.85);
+            backdrop-filter: blur(6px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .brand { display: flex; align-items: center; gap: 0.6rem; }
+        .brand-mark {
+            width: 28px; height: 28px;
+            border: 1.5px solid var(--accent);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--accent);
+            font-family: var(--mono);
+            font-weight: 700;
+            font-size: 13px;
+            box-shadow: 0 0 14px rgba(61,220,132,0.25);
+        }
+        .brand-name { font-family: var(--mono); font-weight: 700; letter-spacing: 0.02em; font-size: 1.05rem; }
+        .brand-name span { color: var(--accent); }
+        .brand-sub { color: var(--text-dim); font-size: 0.72rem; font-family: var(--mono); margin-left: 0.5rem; }
+
+        .topnav { display: flex; align-items: center; gap: 1.3rem; }
+        .topnav a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-family: var(--mono);
+            transition: color 0.15s;
+            padding: 0.3rem 0;
+        }
+        .topnav a:hover, .topnav a.active { color: var(--accent); }
+        .topnav .sep { width: 1px; height: 16px; background: var(--line); margin: 0 0.2rem; }
+
+        .session-pill {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-family: var(--mono); font-size: 0.78rem; color: var(--text-dim);
+            padding: 0.3rem 0.7rem;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+        }
+        .dot-live { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        /* --- Contenu --- */
+        main { flex: 1; padding: 2.2rem 1.8rem 3rem; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+        .page-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.6rem; gap: 1rem; flex-wrap: wrap; }
+        .eyebrow { font-family: var(--mono); font-size: 0.72rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.35rem; }
+        h1 { font-size: 1.55rem; font-weight: 700; letter-spacing: -0.01em; }
+        .actions { display: flex; gap: 0.6rem; }
+
+        /* --- Cartes stats --- */
+        .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.9rem; margin-bottom: 1.8rem; }
+        .stat {
+            background: var(--bg-1);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 1rem 1.1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat::after { content: ""; position: absolute; left:0; top:0; bottom:0; width: 3px; background: var(--accent-color, var(--accent)); }
+        .stat .num { font-family: var(--mono); font-size: 1.7rem; font-weight: 700; color: var(--text); }
+        .stat .label { color: var(--text-dim); font-size: 0.75rem; margin-top: 0.15rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* --- Cartes incidents --- */
+        .card-list { display: flex; flex-direction: column; gap: 0.6rem; }
+        .inc-card {
+            background: var(--bg-1);
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--line-bright);
+            border-radius: 8px;
+            padding: 0.9rem 1.1rem;
+            transition: border-color 0.15s, transform 0.1s;
+        }
+        .inc-card:hover { border-left-color: var(--accent); transform: translateX(2px); }
+        .inc-card.sev-critique { border-left-color: var(--crit); }
+        .inc-card.sev-haute { border-left-color: var(--haute); }
+        .inc-card.sev-moyenne { border-left-color: var(--moyenne); }
+        .inc-card.sev-basse { border-left-color: var(--basse); }
+
+        .inc-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .inc-id { font-family: var(--mono); color: var(--text-dim); font-size: 0.8rem; }
+        .inc-title { font-weight: 600; color: var(--text); text-decoration: none; }
+        .inc-title:hover { color: var(--accent); }
+        .inc-meta { display: flex; gap: 0.6rem; align-items: center; flex-shrink: 0; }
+
+        .badge { font-family: var(--mono); font-size: 0.68rem; font-weight: 700; padding: 0.18rem 0.55rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em; margin-right: 0.6rem; }
+        .badge.critique { background: rgba(255,92,92,0.12); color: var(--crit); border: 1px solid rgba(255,92,92,0.3); }
+        .badge.haute { background: rgba(255,168,76,0.12); color: var(--haute); border: 1px solid rgba(255,168,76,0.3); }
+        .badge.moyenne { background: rgba(76,158,255,0.12); color: var(--moyenne); border: 1px solid rgba(76,158,255,0.3); }
+        .badge.basse { background: rgba(107,118,136,0.12); color: var(--basse); border: 1px solid rgba(107,118,136,0.3); }
+
+        .status-pill { font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim); }
+        .status-pill.cloture { color: var(--accent); }
+
+        .inc-form { display: flex; gap: 0.5rem; margin-top: 0.7rem; align-items: center; }
+
+        /* --- Formulaires --- */
+        .panel { background: var(--bg-1); border: 1px solid var(--line); border-radius: 10px; padding: 1.6rem; max-width: 480px; }
+        label { display: block; font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; margin-top: 1rem; }
+        label:first-of-type { margin-top: 0; }
+        input, select, textarea {
+            width: 100%;
+            background: var(--bg-0);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            color: var(--text);
+            font-family: var(--sans);
+            font-size: 0.9rem;
+            transition: border-color 0.15s;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+        textarea { min-height: 80px; resize: vertical; font-family: var(--sans); }
+
+        button, .btn {
+            background: var(--accent);
+            color: #06140d;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: filter 0.15s, transform 0.1s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        button:hover, .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-ghost { background: transparent; border: 1px solid var(--line-bright); color: var(--text); }
+        .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-small { padding: 0.35rem 0.7rem; font-size: 0.75rem; }
+        form.inline { display: inline; }
+
+        .form-actions { margin-top: 1.4rem; display: flex; gap: 0.7rem; }
+
+        /* --- Table logs --- */
+        .log-table { width: 100%; border-collapse: collapse; background: var(--bg-1); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: 0.82rem; }
+        .log-table th { text-align: left; padding: 0.7rem 1rem; background: var(--bg-2); color: var(--text-dim); font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--line); }
+        .log-table td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 0.78rem; color: var(--text); }
+        .log-table tr:last-child td { border-bottom: none; }
+        .log-table tr:hover td { background: rgba(61,220,132,0.03); }
+        .evt-tag { font-family: var(--mono); font-size: 0.68rem; padding: 0.15rem 0.5rem; border-radius: 4px; background: var(--bg-2); color: var(--text-dim); }
+        .evt-tag.ok { color: var(--accent); }
+        .evt-tag.fail { color: var(--crit); }
+
+        /* --- Détail incident --- */
+        .detail-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+        .comment { background: var(--bg-1); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 0.8rem 1rem; margin-bottom: 0.6rem; }
+        .comment-head { display: flex; gap: 0.6rem; align-items: baseline; margin-bottom: 0.3rem; }
+        .comment-author { color: var(--accent); font-weight: 700; font-family: var(--mono); font-size: 0.8rem; }
+        .comment-date { color: var(--text-dim); font-size: 0.72rem; font-family: var(--mono); }
+
+        .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-dim); }
+        .empty-state .glyph { font-family: var(--mono); font-size: 2rem; color: var(--line-bright); margin-bottom: 0.6rem; }
+
+        .flash { padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 1.2rem; font-size: 0.85rem; font-family: var(--mono); }
+        .flash.error { background: rgba(255,92,92,0.1); border: 1px solid rgba(255,92,92,0.3); color: var(--crit); }
+
+        footer { text-align: center; padding: 1.2rem; color: var(--text-dim); font-family: var(--mono); font-size: 0.7rem; border-top: 1px solid var(--line); }
+
+        @media (max-width: 640px) {
+            .topbar { flex-wrap: wrap; gap: 0.7rem; }
+            .topnav { gap: 1rem; }
+            main { padding: 1.4rem 1rem 2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <div class="topbar">
+        <div class="brand">
+            <div class="brand-mark">S</div>
+            <div class="brand-name">SOC<span>ket</span></div>
+            <div class="brand-sub">// mission control</div>
+        </div>
+        {% if session.username %}
+        <div class="topnav">
+            <a href="{{ url_for('accueil') }}" class="{% if request.path == '/' %}active{% endif %}">incidents</a>
+            <a href="{{ url_for('nouveau_incident') }}">+ nouveau</a>
+            <a href="{{ url_for('voir_logs') }}">logs</a>
+            {% if session.role == 'admin' %}<a href="{{ url_for('liste_utilisateurs') }}">équipe</a>{% endif %}
+            <div class="sep"></div>
+            <div class="session-pill"><span class="dot-live"></span>{{ session.username }}</div>
+            <a href="{{ url_for('logout') }}">quitter</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>SOCket — plateforme de supervision de sécurité — Projet Fil Rouge B3 Cyber</footer>
+</div>
+</body>
+</html>
