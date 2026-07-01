@@ -1,5 +1,7 @@
 import sqlite3
 import json
+import os
+from pymongo import MongoClient
 from datetime import datetime
 from flask import Flask, g, request, redirect, url_for, session, render_template
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -7,6 +9,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 app.secret_key = "cle-secrete-a-changer"
 DATABASE = "socket.db"
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/socket_logs")
+mongo_client = MongoClient(MONGO_URI)
+mongo_db = mongo_client.get_database()
+logs_collection = mongo_db["logs"]
 
 
 def log_event(event_type, username, details=""):
@@ -17,8 +23,7 @@ def log_event(event_type, username, details=""):
         "details": details,
         "source_ip": request.remote_addr
     }
-    with open("logs.jsonl", "a", encoding="utf-8") as f:
-        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    logs_collection.insert_one(entry)
 
 
 @app.before_request
@@ -223,13 +228,9 @@ def changer_statut(incident_id):
 @app.route("/logs")
 @login_requis
 def voir_logs():
-    entries = []
-    try:
-        with open("logs.jsonl", "r", encoding="utf-8") as f:
-            entries = [json.loads(l) for l in f.readlines()]
-    except FileNotFoundError:
-        pass
-    entries.reverse()
+    entries = list(logs_collection.find().sort("timestamp", -1).limit(200))
+    for e in entries:
+        e["_id"] = str(e["_id"])
     return render_template("logs.html", entries=entries)
 
 

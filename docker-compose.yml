@@ -6,9 +6,20 @@ services:
       - "5000:5000"
     environment:
       - SECRET_KEY=${SOCKET_SECRET_KEY:-changez-moi-en-production}
+      - MONGO_URI=mongodb://mongo:27017/socket_logs
     volumes:
       - socket-data:/app/data
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7
+    container_name: socket-mongo
+    volumes:
+      - mongo-data:/data/db
     restart: unless-stopped
 
 volumes:
   socket-data:
+  mongo-data:
