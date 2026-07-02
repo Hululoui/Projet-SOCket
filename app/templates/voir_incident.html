@@ -20,6 +20,26 @@
     Fil de commentaires ({{ commentaires|length }})
 </h2>
 
+<div class="panel" style="max-width:400px; margin-bottom:1.4rem;">
+    <form method="POST" action="{{ url_for('assigner_incident', incident_id=incident.id) }}">
+        <label>Assigne a</label>
+        <select name="assigne_a">
+            <option value="">-- Choisir un analyste --</option>
+            {% for u in utilisateurs %}
+                <option value="{{ u.username }}" {% if incident.assigne_a == u.username %}selected{% endif %}>{{ u.username }}</option>
+            {% endfor %}
+        </select>
+        <div class="form-actions">
+            <button type="submit" class="btn-small">Assigner</button>
+        </div>
+    </form>
+    {% if incident.assigne_a %}
+        <p style="margin-top:0.6rem; color:var(--text-dim); font-size:0.85rem;">
+            Actuellement assigne a <span style="color:var(--accent); font-weight:bold;">{{ incident.assigne_a }}</span>
+        </p>
+    {% endif %}
+</div>
+
 {% if commentaires %}
     {% for c in commentaires %}
     <div class="comment">

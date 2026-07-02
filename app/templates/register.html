@@ -4,10 +4,15 @@
 <div style="max-width: 400px; margin: 3rem auto 0;">
     <div class="eyebrow" style="text-align:center;">nouvel analyste</div>
     <h1 style="text-align:center; margin-bottom:1.6rem;">Créer un compte</h1>
+    {% if erreur %}
+    <div class="flash error">{{ erreur }}</div>
+    {% endif %}
     <div class="panel">
         <form method="POST">
             <label>Nom d'utilisateur</label>
             <input type="text" name="username" required autofocus>
+            <label>Email</label>
+            <input type="email" name="email" required placeholder="exemple@climit-b3.online">
             <label>Mot de passe</label>
             <input type="password" name="password" required minlength="8">
             <div class="form-actions">

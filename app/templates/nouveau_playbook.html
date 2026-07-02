@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %} — nouveau playbook{% endblock %}
+{% block content %}
+<div class="eyebrow">base de connaissances</div>
+<h1 style="margin-bottom:1.6rem;">Nouveau playbook</h1>
+
+<div class="panel" style="max-width:600px;">
+    <form method="POST">
+        <label>Titre</label>
+        <input type="text" name="titre" required placeholder="Ex : Reponse a une tentative de phishing">
+
+        <label>Type d'incident concerne</label>
+        <input type="text" name="type_incident" required placeholder="Ex : phishing, bruteforce, malware...">
+
+        <label>Description</label>
+        <textarea name="description" required placeholder="Resume du probleme traite"></textarea>
+
+        <label>Etapes a suivre</label>
+        <textarea name="etapes" required placeholder="1. Premiere etape...&#10;2. Deuxieme etape..." style="min-height:150px;"></textarea>
+
+        <div class="form-actions">
+            <button type="submit">Enregistrer le playbook</button>
+            <a href="{{ url_for('liste_playbooks') }}" class="btn-ghost">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

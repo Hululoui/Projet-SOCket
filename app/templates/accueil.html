@@ -16,6 +16,8 @@
     <div class="stat" style="--accent-color: var(--haute);"><div class="num">{{ stats.ouverts }}</div><div class="label">En cours</div></div>
     <div class="stat" style="--accent-color: var(--crit);"><div class="num">{{ stats.critiques }}</div><div class="label">Critiques</div></div>
     <div class="stat" style="--accent-color: var(--accent);"><div class="num">{{ stats.clotures }}</div><div class="label">Clôturés</div></div>
+    <div class="stat" style="--accent-color: var(--moyenne);"><div class="num">{{ stats.non_assignes }}</div><div class="label">Non assignes</div></div>
+    <div class="stat"><div class="num">{{ nb_playbooks }}</div><div class="label">Playbooks</div></div>
 </div>
 
 {% if incidents %}
@@ -31,6 +33,13 @@
                 <span class="badge {{ i.criticite }}">{{ i.criticite }}</span>
                 <span class="status-pill {{ 'cloture' if i.statut == 'cloture' else '' }}">{{ i.statut.replace('_',' ') }}</span>
             </div>
+        </div>
+        <div style="margin-top:0.4rem; font-size:0.85rem; color:var(--text-dim);">
+            {% if i.assigne_a %}
+                Assigne a <strong style="color:var(--accent);">{{ i.assigne_a }}</strong>
+            {% else %}
+                <em>Non assigne</em>
+            {% endif %}
         </div>
         <form method="POST" action="{{ url_for('changer_statut', incident_id=i.id) }}" class="inc-form">
             <select name="statut">

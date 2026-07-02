@@ -1,6 +1,8 @@
 import sqlite3
 import json
 import os
+import smtplib
+from email.mime.text import MIMEText
 from pymongo import MongoClient
 from datetime import datetime
 from flask import Flask, g, request, redirect, url_for, session, render_template
@@ -8,7 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = "cle-secrete-a-changer"
-DATABASE = "socket.db"
+DATABASE = "/app/data/socket.db"
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/socket_logs")
 mongo_client = MongoClient(MONGO_URI)
 mongo_db = mongo_client.get_database()
@@ -25,6 +27,27 @@ def log_event(event_type, username, details=""):
     }
     logs_collection.insert_one(entry)
 
+def envoyer_email(destinataire, sujet, contenu):
+    serveur = os.environ.get("MAILCOW_SERVEUR")
+    port = int(os.environ.get("MAILCOW_PORT", 587))
+    adresse = os.environ.get("MAILCOW_ADRESSE")
+    mot_de_passe = os.environ.get("MAILCOW_MOT_DE_PASSE")
+
+    if not serveur or not adresse:
+        return
+
+    message = MIMEText(contenu)
+    message["Subject"] = sujet
+    message["From"] = adresse
+    message["To"] = destinataire
+
+    try:
+        with smtplib.SMTP(serveur, port) as smtp:
+            smtp.starttls()
+            smtp.login(adresse, mot_de_passe)
+            smtp.sendmail(adresse, destinataire, message.as_string())
+    except Exception as e:
+        log_event("EMAIL_FAILED", "system", f"Echec envoi vers {destinataire}: {str(e)}")
 
 @app.before_request
 def log_toutes_requetes():
@@ -52,6 +75,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
             role TEXT NOT NULL DEFAULT 'analyst'
         );
@@ -59,7 +83,8 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             titre TEXT NOT NULL,
             criticite TEXT NOT NULL,
-            statut TEXT NOT NULL DEFAULT 'detecte'
+            statut TEXT NOT NULL DEFAULT 'detecte',
+            assigne_a TEXT
         );
         CREATE TABLE IF NOT EXISTS commentaires (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,6 +98,15 @@ def init_db():
             username TEXT PRIMARY KEY,
             nombre INTEGER NOT NULL DEFAULT 0,
             derniere_tentative TEXT
+        );
+        CREATE TABLE IF NOT EXISTS playbooks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            titre TEXT NOT NULL,
+            type_incident TEXT NOT NULL,
+            description TEXT NOT NULL,
+            etapes TEXT NOT NULL,
+            auteur TEXT NOT NULL,
+            date_creation TEXT NOT NULL
         );
     """)
     db.commit()
@@ -102,12 +136,22 @@ def admin_requis(f):
 def register():
     if request.method == "POST":
         db = get_db()
+        username = request.form["username"]
+        email = request.form["email"]
+
+        existe_deja = db.execute(
+            "SELECT id FROM users WHERE username = ? OR email = ?", (username, email)
+        ).fetchone()
+
+        if existe_deja:
+            return render_template("register.html", erreur="Ce nom d'utilisateur ou cet email existe deja.")
+
         db.execute(
-            "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-            (request.form["username"], generate_password_hash(request.form["password"]))
+            "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)",
+            (username, email, generate_password_hash(request.form["password"]))
         )
         db.commit()
-        log_event("USER_CREATED", request.form["username"])
+        log_event("USER_CREATED", username)
         return redirect(url_for("login"))
     return render_template("register.html")
 
@@ -171,8 +215,10 @@ def accueil():
         "ouverts": len([i for i in incidents if i["statut"] != "cloture"]),
         "critiques": len([i for i in incidents if i["criticite"] == "critique"]),
         "clotures": len([i for i in incidents if i["statut"] == "cloture"]),
+        "non_assignes": len([i for i in incidents if not i["assigne_a"]]),
     }
-    return render_template("accueil.html", incidents=incidents, stats=stats)
+    nb_playbooks = db.execute("SELECT COUNT(*) FROM playbooks").fetchone()[0]
+    return render_template("accueil.html", incidents=incidents, stats=stats, nb_playbooks=nb_playbooks)
 
 
 @app.route("/nouveau", methods=["GET", "POST"])
@@ -198,7 +244,8 @@ def voir_incident(incident_id):
     commentaires = db.execute(
         "SELECT * FROM commentaires WHERE incident_id = ? ORDER BY date_creation", (incident_id,)
     ).fetchall()
-    return render_template("voir_incident.html", incident=incident, commentaires=commentaires)
+    utilisateurs = db.execute("SELECT username FROM users ORDER BY username").fetchall()
+    return render_template("voir_incident.html", incident=incident, commentaires=commentaires, utilisateurs=utilisateurs)
 
 
 @app.route("/incident/<int:incident_id>/commentaire", methods=["POST"])
@@ -242,6 +289,56 @@ def liste_utilisateurs():
     users = db.execute("SELECT id, username, role FROM users").fetchall()
     return render_template("liste_utilisateurs.html", users=users)
 
+@app.route("/incident/<int:incident_id>/assigner", methods=["POST"])
+@login_requis
+def assigner_incident(incident_id):
+    db = get_db()
+    analyste = request.form["assigne_a"]
+    db.execute("UPDATE incidents SET assigne_a = ? WHERE id = ?", (analyste, incident_id))
+    db.commit()
+    log_event("INCIDENT_ASSIGNED", session["username"], f"incident #{incident_id} assigné à {analyste}")
+
+    utilisateur = db.execute("SELECT email FROM users WHERE username = ?", (analyste,)).fetchone()
+    if utilisateur and utilisateur["email"]:
+        incident = db.execute("SELECT titre FROM incidents WHERE id = ?", (incident_id,)).fetchone()
+        envoyer_email(
+            utilisateur["email"],
+            f"SOCket - Nouvel incident assigne : {incident['titre']}",
+            f"Bonjour,\n\nL'incident #{incident_id} ({incident['titre']}) vous a ete assigne par {session['username']}.\n\nConnectez-vous a SOCket pour plus de details.\n\n- L'equipe SOCket"
+        )
+
+    return redirect(url_for("voir_incident", incident_id=incident_id))
+
+@app.route("/playbooks")
+@login_requis
+def liste_playbooks():
+    db = get_db()
+    playbooks = db.execute("SELECT * FROM playbooks ORDER BY date_creation DESC").fetchall()
+    return render_template("playbooks.html", playbooks=playbooks)
+
+
+@app.route("/playbooks/nouveau", methods=["GET", "POST"])
+@login_requis
+def nouveau_playbook():
+    if request.method == "POST":
+        db = get_db()
+        db.execute(
+            "INSERT INTO playbooks (titre, type_incident, description, etapes, auteur, date_creation) VALUES (?, ?, ?, ?, ?, ?)",
+            (request.form["titre"], request.form["type_incident"], request.form["description"],
+             request.form["etapes"], session["username"], datetime.utcnow().isoformat())
+        )
+        db.commit()
+        log_event("PLAYBOOK_CREATED", session["username"], request.form["titre"])
+        return redirect(url_for("liste_playbooks"))
+    return render_template("nouveau_playbook.html")
+
+
+@app.route("/playbooks/<int:playbook_id>")
+@login_requis
+def voir_playbook(playbook_id):
+    db = get_db()
+    playbook = db.execute("SELECT * FROM playbooks WHERE id = ?", (playbook_id,)).fetchone()
+    return render_template("voir_playbook.html", playbook=playbook)
 
 if __name__ == "__main__":
     with app.app_context():

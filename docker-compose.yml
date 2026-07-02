@@ -5,8 +5,12 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - SECRET_KEY=${SOCKET_SECRET_KEY:-changez-moi-en-production}
+      - SECRET_KEY=${SOCKET_SECRET_KEY:-b2ca9219fa225a89176e78be6bf189aa1066249763c34bd6f6dbce85f529336b}
       - MONGO_URI=mongodb://mongo:27017/socket_logs
+      - MAILCOW_SERVEUR=${MAILCOW_SERVEUR}
+      - MAILCOW_PORT=${MAILCOW_PORT}
+      - MAILCOW_ADRESSE=${MAILCOW_USER}
+      - MAILCOW_MOT_DE_PASSE=${MAILCOW_PWD}
     volumes:
       - socket-data:/app/data
     depends_on:
@@ -18,6 +22,14 @@ services:
     container_name: socket-mongo
     volumes:
       - mongo-data:/data/db
+    restart: unless-stopped
+
+  backup-service:
+    build: ./app
+    container_name: socket-backup
+    volumes:
+      - socket-data:/app/data
+    entrypoint: ["bash", "/app/backup_auto.sh"]
     restart: unless-stopped
 
 volumes:

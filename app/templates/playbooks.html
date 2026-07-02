@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %} — playbooks{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <div class="eyebrow">base de connaissances</div>
+        <h1>Playbooks</h1>
+    </div>
+    <div class="actions">
+        <a href="{{ url_for('nouveau_playbook') }}" class="btn">+ Nouveau playbook</a>
+    </div>
+</div>
+
+{% if playbooks %}
+<div class="card-list">
+    {% for p in playbooks %}
+    <div class="inc-card">
+        <div class="inc-top">
+            <a href="{{ url_for('voir_playbook', playbook_id=p.id) }}" class="inc-title">{{ p.titre }}</a>
+            <span class="badge moyenne">{{ p.type_incident }}</span>
+        </div>
+        <div style="margin-top:0.4rem; font-size:0.85rem; color:var(--text-dim);">
+            {{ p.description }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="glyph">[ ]</div>
+    <p>Aucun playbook enregistre pour le moment.</p>
+    <p style="margin-top:0.8rem;"><a href="{{ url_for('nouveau_playbook') }}">Creer le premier playbook</a></p>
+</div>
+{% endif %}
+{% endblock %}
