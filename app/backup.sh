@@ -15,3 +15,4 @@ cp /app/data/socket.db "$DOSSIER_SAUVEGARDE/socket.db"
 mongodump --uri="$MONGO_URI" --out="$DOSSIER_SAUVEGARDE/mongo"
 
 echo "Sauvegarde terminée : $DOSSIER_SAUVEGARDE"
+python3 /app/upload_backup.py "$DOSSIER_SAUVEGARDE/socket.db" "socket_$DATE.db"

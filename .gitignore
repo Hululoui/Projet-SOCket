@@ -9,6 +9,7 @@ app/data/
 # Env / secrets
 .env
 .env.local
+app/client_secret_352847071573-8p7k0bkb0noqqmg2a578s7g78g4tcpmi.apps.googleusercontent.com.json
 # IDE / OS
 .vscode/
 .DS_Store
