@@ -10,6 +10,7 @@ app/data/
 .env
 .env.local
 app/client_secret_352847071573-8p7k0bkb0noqqmg2a578s7g78g4tcpmi.apps.googleusercontent.com.json
+app/socket-backups-e49f206d60c3.json
 # IDE / OS
 .vscode/
 .DS_Store
