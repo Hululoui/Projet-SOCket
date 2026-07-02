@@ -2,6 +2,7 @@ import sqlite3
 import json
 import os
 import smtplib
+import requests
 from email.mime.text import MIMEText
 from pymongo import MongoClient
 from datetime import datetime
@@ -48,6 +49,19 @@ def envoyer_email(destinataire, sujet, contenu):
             smtp.sendmail(adresse, destinataire, message.as_string())
     except Exception as e:
         log_event("EMAIL_FAILED", "system", f"Echec envoi vers {destinataire}: {str(e)}")
+
+def stats_rspamd():
+    url = os.environ.get("RSPAMD_URL")
+    password = os.environ.get("RSPAMD_PASSWORD")
+    if not url or not password:
+        return None
+    try:
+        reponse = requests.get(f"{url}/stat", headers={"Password": password}, timeout=5)
+        if reponse.status_code == 200:
+            return reponse.json()
+    except Exception as e:
+        log_event("RSPAMD_STATS_FAILED", "system", str(e))
+    return None
 
 @app.before_request
 def log_toutes_requetes():
@@ -339,6 +353,27 @@ def voir_playbook(playbook_id):
     db = get_db()
     playbook = db.execute("SELECT * FROM playbooks WHERE id = ?", (playbook_id,)).fetchone()
     return render_template("voir_playbook.html", playbook=playbook)
+
+@app.route("/dashboard")
+@login_requis
+def dashboard():
+    db = get_db()
+    incidents = db.execute("SELECT * FROM incidents").fetchall()
+
+    stats_tickets = {
+        "total": len(incidents),
+        "ouverts": len([i for i in incidents if i["statut"] != "cloture"]),
+        "critiques": len([i for i in incidents if i["criticite"] == "critique"]),
+        "hautes": len([i for i in incidents if i["criticite"] == "haute"]),
+        "moyennes": len([i for i in incidents if i["criticite"] == "moyenne"]),
+        "basses": len([i for i in incidents if i["criticite"] == "basse"]),
+        "clotures": len([i for i in incidents if i["statut"] == "cloture"]),
+        "non_assignes": len([i for i in incidents if not i["assigne_a"]]),
+    }
+
+    stats_mail = stats_rspamd()
+
+    return render_template("dashboard.html", stats_tickets=stats_tickets, stats_mail=stats_mail)
 
 if __name__ == "__main__":
     with app.app_context():

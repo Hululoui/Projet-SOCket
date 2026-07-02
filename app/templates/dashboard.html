@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %} — dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <div class="eyebrow">salle de controle</div>
+        <h1>Dashboard</h1>
+    </div>
+</div>
+
+<h2 style="font-family:var(--mono); font-size:0.78rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.8rem;">
+    Incidents — repartition par criticite
+</h2>
+<div class="stat-row">
+    <div class="stat"><div class="num">{{ stats_tickets.total }}</div><div class="label">Total</div></div>
+    <div class="stat" style="--accent-color: var(--crit);"><div class="num">{{ stats_tickets.critiques }}</div><div class="label">Critiques</div></div>
+    <div class="stat" style="--accent-color: var(--haute);"><div class="num">{{ stats_tickets.hautes }}</div><div class="label">Hautes</div></div>
+    <div class="stat" style="--accent-color: var(--moyenne);"><div class="num">{{ stats_tickets.moyennes }}</div><div class="label">Moyennes</div></div>
+    <div class="stat" style="--accent-color: var(--basse);"><div class="num">{{ stats_tickets.basses }}</div><div class="label">Basses</div></div>
+</div>
+
+<h2 style="font-family:var(--mono); font-size:0.78rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; margin:1.6rem 0 0.8rem;">
+    Incidents — suivi operationnel
+</h2>
+<div class="stat-row">
+    <div class="stat" style="--accent-color: var(--haute);"><div class="num">{{ stats_tickets.ouverts }}</div><div class="label">En cours</div></div>
+    <div class="stat" style="--accent-color: var(--accent);"><div class="num">{{ stats_tickets.clotures }}</div><div class="label">Clotures</div></div>
+    <div class="stat" style="--accent-color: var(--moyenne);"><div class="num">{{ stats_tickets.non_assignes }}</div><div class="label">Non assignes</div></div>
+</div>
+
+<h2 style="font-family:var(--mono); font-size:0.78rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; margin:1.6rem 0 0.8rem;">
+    Messagerie — filtre antispam (Rspamd)
+</h2>
+{% if stats_mail %}
+<div class="stat-row">
+    <div class="stat"><div class="num">{{ stats_mail.scanned }}</div><div class="label">Emails scannes</div></div>
+    <div class="stat" style="--accent-color: var(--crit);"><div class="num">{{ stats_mail.actions['reject'] or 0 }}</div><div class="label">Rejetes</div></div>
+    <div class="stat" style="--accent-color: var(--haute);"><div class="num">{{ stats_mail.actions['add header'] or 0 }}</div><div class="label">Marques suspects</div></div>
+    <div class="stat" style="--accent-color: var(--accent);"><div class="num">{{ stats_mail.actions['no action'] or 0 }}</div><div class="label">Legitimes</div></div>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="glyph">[ ]</div>
+    <p>Statistiques antispam indisponibles pour le moment.</p>
+</div>
+{% endif %}
+{% endblock %}

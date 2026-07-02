@@ -11,6 +11,8 @@ services:
       - MAILCOW_PORT=${MAILCOW_PORT}
       - MAILCOW_ADRESSE=${MAILCOW_USER}
       - MAILCOW_MOT_DE_PASSE=${MAILCOW_PWD}
+      - RSPAMD_URL=${RSPAMD_URL}
+      - RSPAMD_PASSWORD=${RSPAMD_PASSWORD}
     volumes:
       - socket-data:/app/data
     depends_on:

@@ -9,7 +9,7 @@ DOSSIER_SAUVEGARDE="/app/data/backups/$DATE"
 mkdir -p "$DOSSIER_SAUVEGARDE"
 
 # Sauvegarde de la base SQLite (comptes, incidents)
-cp /app/socket.db "$DOSSIER_SAUVEGARDE/socket.db"
+cp /app/data/socket.db "$DOSSIER_SAUVEGARDE/socket.db"
 
 # Sauvegarde de MongoDB (les logs de sécurité)
 mongodump --uri="$MONGO_URI" --out="$DOSSIER_SAUVEGARDE/mongo"

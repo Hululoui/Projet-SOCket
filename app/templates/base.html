@@ -231,17 +231,20 @@
 <body>
 <div class="shell">
     <div class="topbar">
-        <div class="brand">
-            <div class="brand-mark">S</div>
-            <div class="brand-name">SOC<span>ket</span></div>
-            <div class="brand-sub">// mission control</div>
-        </div>
+        <a href="{{ url_for('dashboard') }}" style="text-decoration:none; color:inherit;">
+            <div class="brand">
+                <div class="brand-mark">S</div>
+                <div class="brand-name">SOC<span>ket</span></div>
+                <div class="brand-sub">// mission control</div>
+            </div>
+        </a>
         {% if session.username %}
         <div class="topnav">
+            <a href="{{ url_for('dashboard') }}">dashboard</a>
             <a href="{{ url_for('accueil') }}" class="{% if request.path == '/' %}active{% endif %}">incidents</a>
-            <a href="{{ url_for('nouveau_incident') }}">+ nouveau</a>
-            <a href="{{ url_for('voir_logs') }}">logs</a>
+            <a href="https://mail.climit-b3.online" target="_blank">messagerie</a>
             <a href="{{ url_for('liste_playbooks') }}">playbooks</a>
+            <a href="{{ url_for('voir_logs') }}">logs</a>
             {% if session.role == 'admin' %}<a href="{{ url_for('liste_utilisateurs') }}">équipe</a>{% endif %}
             <div class="sep"></div>
             <div class="session-pill"><span class="dot-live"></span>{{ session.username }}</div>
