@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir google-api-python-client google-auth google-auth-
 
 COPY . .
 
-COPY client_secret_352847071573-8p7k0bkb0noqqmg2a578s7g78g4tcpmi.apps.googleusercontent.com.json /app/client_secret.json
+COPY client_secret*.json /app/
 COPY backup.sh /app/backup.sh
 RUN chmod +x /app/backup.sh && mkdir -p /app/data/backups && chown -R socket:socket /app/data
 

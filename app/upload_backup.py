@@ -14,7 +14,9 @@ from googleapiclient.http import MediaFileUpload
 DOSSIER_DRIVE_NOM = "SOCket-Backups"
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 TOKEN_PATH = "/app/data/google_token.json"
-CLIENT_SECRET_PATH = "/app/client_secret.json"
+import glob
+_fichiers_secret = glob.glob("/app/client_secret*.json")
+CLIENT_SECRET_PATH = _fichiers_secret[0] if _fichiers_secret else None
 
 
 def obtenir_credentials():
