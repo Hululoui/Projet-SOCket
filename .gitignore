@@ -2,15 +2,13 @@
 venv/
 __pycache__/
 *.pyc
-
-# Données locales générées (ne doivent pas être versionnées)
+# Donnees locales generees (ne doivent pas etre versionnees)
 app/socket.db
 app/logs.jsonl
-
+app/data/
 # Env / secrets
 .env
 .env.local
-
 # IDE / OS
 .vscode/
 .DS_Store
