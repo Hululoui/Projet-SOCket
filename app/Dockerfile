@@ -11,9 +11,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+COPY backup.sh /app/backup.sh
+RUN chmod +x /app/backup.sh && mkdir -p /app/data/backups && chown -R socket:socket /app/data
+
 RUN chown -R socket:socket /app
 USER socket
 
 EXPOSE 5000
+
+ENV FLASK_APP=app.py
 
 CMD ["python", "app.py"]
