@@ -2,6 +2,7 @@ import sqlite3
 import json
 import os
 import smtplib
+import time
 import requests
 from email.mime.text import MIMEText
 from pymongo import MongoClient
@@ -16,7 +17,7 @@ MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/socket_logs")
 mongo_client = MongoClient(MONGO_URI)
 mongo_db = mongo_client.get_database()
 logs_collection = mongo_db["logs"]
-
+_derniers_envois = []
 
 def log_event(event_type, username, details=""):
     entry = {
@@ -27,6 +28,15 @@ def log_event(event_type, username, details=""):
         "source_ip": request.remote_addr
     }
     logs_collection.insert_one(entry)
+
+def peut_envoyer_email():
+    global _derniers_envois
+    maintenant = time.time()
+    _derniers_envois = [t for t in _derniers_envois if maintenant - t < 60]
+    if len(_derniers_envois) >= 5:
+        return False
+    _derniers_envois.append(maintenant)
+    return True
 
 def envoyer_email(destinataire, sujet, contenu):
     serveur = os.environ.get("MAILCOW_SERVEUR")
