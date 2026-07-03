@@ -15,3 +15,4 @@ app/socket-backups-e49f206d60c3.json
 .vscode/
 .DS_Store
 Thumbs.db
+app/client_secret.json
